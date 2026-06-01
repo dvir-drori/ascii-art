@@ -15,15 +15,18 @@ public class AsciiArtAlgorithm {
 	private final Image image;
 	private final int resolution;
 	private final SubImgCharMatcher matcher;
+	private boolean reverse;
+
 	/**
 	 * @param image      the source image
 	 * @param resolution number of sub-images per row
-	 * @param charset    set of characters to choose from
+	 * @param matcher    SubImgCharMatcher object
 	 */
-	public AsciiArtAlgorithm(Image image, int resolution, char[] charset) {
+	public AsciiArtAlgorithm(Image image, int resolution, SubImgCharMatcher matcher, boolean reverse) {
 		this.image = image;
 		this.resolution = resolution;
-		this.matcher = new SubImgCharMatcher(charset);
+		this.matcher = matcher;
+		this.reverse = reverse;
 	}
 
 	/**
@@ -41,10 +44,23 @@ public class AsciiArtAlgorithm {
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {
 				double brightness = SubImageBrightness.of(tiles[i][j]);
-				result[i][j] = matcher.getCharByImageBrightness(brightness);
+				if (!reverse){
+					result[i][j] = matcher.getCharByImageBrightness(brightness);
+				}
+				else{
+					result[i][j] = matcher.getCharByImageBrightness(1-brightness);
+				}
+
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * flips the reverse option of the algorithm
+	 */
+	public void flipReverse(){
+		reverse = !reverse;
 	}
 
 

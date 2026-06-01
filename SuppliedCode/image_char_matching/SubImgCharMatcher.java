@@ -136,4 +136,14 @@ public class SubImgCharMatcher {
 		return best;
 	}
 
+	/**
+	 * prints all available chars by ascending ascii order
+	 */
+	public void printCharSet(){
+		for (char c : charset){
+			System.out.print(c+" ");
+		}
+		System.out.println();
+	}
+
 }
