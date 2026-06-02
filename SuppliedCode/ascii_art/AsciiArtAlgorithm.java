@@ -1,67 +1,57 @@
 package ascii_art;
 
-import image.Image;
-import image.PaddedImage;
-import image.SubImageBrightness;
 import image_char_matching.SubImgCharMatcher;
 
 /**
- * Runs the ASCII-art pipeline: pads the source image, splits it into a grid of
- * sub-images at the given resolution, and matches each sub-image's brightness
- * to the closest character in the provided charset.
+ * Executes a single pass of the ASCII-art conversion: maps a pre-computed
+ * brightness grid of sub-images to ASCII characters using the provided matcher.
+ *
+ * <p>A new instance should be created for each run. Sub-image brightness values
+ * and character brightness values are cached externally (by the caller and by
+ * {@link SubImgCharMatcher} respectively) so that creating a new instance does
+ * not trigger redundant computation.
  */
-
 public class AsciiArtAlgorithm {
-	private final Image image;
-	private final int resolution;
+	private final double[][] brightnessGrid;
 	private final SubImgCharMatcher matcher;
-	private boolean reverse;
+	private final boolean reverse;
 
 	/**
-	 * @param image      the source image
-	 * @param resolution number of sub-images per row
-	 * @param matcher    SubImgCharMatcher object
+	 * Constructs an algorithm instance for a single run.
+	 *
+	 * @param brightnessGrid pre-computed brightness values for each sub-image,
+	 *                       where brightnessGrid[row][col] is in [0.0, 1.0]
+	 * @param matcher        character matcher mapping brightness to chars
+	 * @param reverse        if true, use the complement brightness (1 - value)
+	 *                       when matching characters
 	 */
-	public AsciiArtAlgorithm(Image image, int resolution, SubImgCharMatcher matcher, boolean reverse) {
-		this.image = image;
-		this.resolution = resolution;
+	public AsciiArtAlgorithm(double[][] brightnessGrid,
+							 SubImgCharMatcher matcher,
+							 boolean reverse) {
+		this.brightnessGrid = brightnessGrid;
 		this.matcher = matcher;
 		this.reverse = reverse;
 	}
 
 	/**
-	 * Produces the ASCII rendering of the image.
+	 * Produces the ASCII rendering by matching each sub-image brightness to the
+	 * closest character in the charset.
 	 *
-	 * @return a char[rows][cols] grid where each cell is the chosen character
-	 *         for the corresponding sub-image
+	 * @return a 2D char array where each cell is the matched ASCII character
 	 */
-	public char[][] run(){
-		PaddedImage padded = new PaddedImage(image);
-		Image[][] tiles = padded.subImages(resolution);
-		int rows = tiles.length;
-		int cols = tiles[0].length;
+	public char[][] run() {
+		int rows = brightnessGrid.length;
+		int cols = brightnessGrid[0].length;
 		char[][] result = new char[rows][cols];
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {
-				double brightness = SubImageBrightness.of(tiles[i][j]);
-				if (!reverse){
-					result[i][j] = matcher.getCharByImageBrightness(brightness);
+				double brightness = brightnessGrid[i][j];
+				if (reverse) {
+					brightness = 1 - brightness;
 				}
-				else{
-					result[i][j] = matcher.getCharByImageBrightness(1-brightness);
-				}
-
+				result[i][j] = matcher.getCharByImageBrightness(brightness);
 			}
 		}
 		return result;
 	}
-
-	/**
-	 * flips the reverse option of the algorithm
-	 */
-	public void flipReverse(){
-		reverse = !reverse;
-	}
-
-
 }

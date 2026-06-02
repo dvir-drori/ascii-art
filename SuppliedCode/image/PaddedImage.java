@@ -4,7 +4,9 @@ package image;
 import java.awt.*;
 
 /**
- * create a padded image with size next power of 2 to each dimension
+ * Wraps an {@link Image} with symmetric white-pixel padding so that both
+ * dimensions become powers of two. Provides a method to split the padded
+ * image into a grid of square sub-images at a given resolution.
  */
 public class PaddedImage {
 	private final Image padded;
@@ -41,9 +43,20 @@ public class PaddedImage {
 		this.padded = new Image(paddedPixels, newWidth, newHeight);
 	}
 
+	/**
+	 * Returns the width of the padded image in pixels.
+	 *
+	 * @return padded width (a power of two)
+	 */
 	public int getWidth() {
 		return padded.getWidth();
 	}
+
+	/**
+	 * Returns the height of the padded image in pixels.
+	 *
+	 * @return padded height (a power of two)
+	 */
 	public int getHeight() {
 		return padded.getHeight();
 	}

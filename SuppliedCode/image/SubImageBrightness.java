@@ -3,8 +3,9 @@ package image;
 import java.awt.*;
 
 /**
- * computing the average grey-scale brightness of an image
- *in the range [0.0, 1.0].
+ * Utility class for computing the average grey-scale brightness of an image
+ * in the range [0.0, 1.0]. Uses the standard luminance formula:
+ * grey = 0.2126*R + 0.7152*G + 0.0722*B, then normalises by 255.
  */
 public final class SubImageBrightness {
 	private SubImageBrightness() {}
