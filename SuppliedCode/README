@@ -1,0 +1,16 @@
+dvir.assaf, dvir.drori
+211378773, 208028118
+
+1. job of each class, relations between them, with accordance to the UML
+
+2. JAVA data structure used in the code, where in the code, and why- running time, and memory usage
+
+3. in the shell class we used switch-case to handle use commands, each command is transferred to its own method
+to be handled. each method can throw 1 of 4 exceptions we created -
+invalid command, invalid format, exceeding boundaries, or charset is too small
+then the shell catches the exceptions and print each its own message.
+
+4. changes to SubImgCharMatcher API and why
+
+5. changes in supplied code and why
+

@@ -26,6 +26,7 @@ public class Shell {
 	private static final int DEFAULT_RESOLUTION = 2;
 	private static final char FIRST_ASCII = 32;
 	private static final char LAST_ASCII = 126;
+	private static final int MIN_CHAR_SET_SIZE = 2;
 
 	// ---- UI strings ----
 	private static final String PROMPT = ">>> ";
@@ -265,7 +266,7 @@ public class Shell {
 	 * @throws CharsetTooSmallException if charset has fewer than 2 characters
 	 */
 	private void handleAsciiArt() throws CharsetTooSmallException {
-		if (matcher.getCharsetSize() < 2) {
+		if (matcher.getCharsetSize() < MIN_CHAR_SET_SIZE) {
 			throw new CharsetTooSmallException(ERR_CHARSET_SMALL);
 		}
 		double[][] brightness = getBrightnessGrid();
