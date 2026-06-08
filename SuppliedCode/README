@@ -4,10 +4,10 @@ dvir.assaf, dvir.drori
 1. job of each class, relations between them, with accordance to the UML
 
 Package ascii_art:
-- Shell: The main class and entry point of the program. Manages the interactive command
+- Shell: The main class of the program. Manages the interactive command
   loop, reading user commands and delegating to the appropriate handler methods. Holds
   references to SubImgCharMatcher (for charset management), AsciiOutput (for rendering),
-  and PaddedImage (for the loaded image). Orchestrates the full pipeline: image loading,
+  and PaddedImage (for the loaded image). Excecutes the full pipeline: image loading,
   padding, brightness computation, and algorithm execution.
 - AsciiArtAlgorithm: Executes a single pass of the ASCII art conversion. Receives a
   pre-computed brightness grid (double[][]) and a SubImgCharMatcher, and maps each
@@ -20,13 +20,12 @@ Package ascii_art:
 - InvalidCommandException: Thrown when the user enters an unrecognized command.
 - InvalidFormatException: Thrown when a command argument has incorrect format.
 
-Package ascii_output:
-- AsciiOutput: An interface defining a single method out(char[][]) for outputting
+Package ascii_output: (Provided)
+- AsciiOutput:  An interface defining a single method out(char[][]) for outputting
   a 2D character grid. Shell holds a reference of this interface type.
-- ConsoleAsciiOutput: Implements AsciiOutput. Prints characters to System.out, each
-  followed by a space, with rows separated by newlines.
+- ConsoleAsciiOutput: Implements AsciiOutput. Prints characters to System.out.
 - HtmlAsciiOutput: Implements AsciiOutput. Writes an HTML file with styled monospace
-  text. Handles HTML entity escaping for <, >, &. Adjusts font size based on grid width.
+  text.
 
 Package image:
 - Image: Represents an image as a 2D Color[][] array. Can be loaded from a file
@@ -36,17 +35,17 @@ Package image:
   dimensions become powers of two. Provides subImages(resolution) which splits the
   padded image into a grid of square Image tiles. Used by Shell for tile decomposition.
 - SubImageBrightness: A stateless utility class. Computes the average grey-scale
-  brightness of an Image using the luminance formula (0.2126*R + 0.7152*G + 0.0722*B),
-  normalized to [0.0, 1.0]. Used by Shell when building the brightness grid.
+  brightness of an Image using the luminance formula, normalized to [0.0, 1.0].
+  Used by Shell when building the brightness grid.
 
 Package image_char_matching:
 - CharConverter: A supplied utility class that renders a character as a 16x16
   BufferedImage using Courier New font and converts it to a boolean[][] grid.
   Used by SubImgCharMatcher to compute raw character brightness.
 - SubImgCharMatcher: The core matching engine. Maintains a configurable charset
-  (TreeSet), caches raw brightness values (HashMap), and lazily computes normalized
-  brightness via linear stretch. Provides getCharByImageBrightness(double) to find
-  the closest character for a given brightness. Used by AsciiArtAlgorithm and Shell.
+  (TreeSet), caches raw brightness values (HashMap), and computes normalized
+  brightness. Provides getCharByImageBrightness(double) to find the closest 
+  character for a given brightness. Used by AsciiArtAlgorithm and Shell.
 
 Relations:
 Shell has-a SubImgCharMatcher, has-a AsciiOutput (interface), has-a PaddedImage.
@@ -63,20 +62,18 @@ TreeSet<Character> (SubImgCharMatcher, field "charset"):
 Used to store the current character set. TreeSet was chosen because it maintains
 characters in sorted ASCII order automatically, which is needed for the printCharSet()
 method and for tie-breaking (lower ASCII wins). It provides O(log n) add and remove
-operations and O(n) sorted iteration. Memory usage is O(n) where n is the charset size.
+operations, and O(n) sorted iteration. Memory usage is O(n).
 
 HashMap<Character, Double> (SubImgCharMatcher, field "rawBrightness"):
 Used to cache the raw brightness of every character ever computed. HashMap was chosen
-for O(1) amortized get/put operations. This acts as a persistent cache: when a character
+for O(1) get/put operations. This acts as a persistent cache: when a character
 is removed from the charset and later re-added, its brightness does not need to be
-recomputed (the glyph rendering via CharConverter is expensive). Memory is O(k) where
-k is the total number of distinct characters ever added across the lifetime.
+recomputed (which is expensive). Memory is O(n).
 
 HashMap<Character, Double> (SubImgCharMatcher, field "normalizedBrightness"):
 Stores the linearly-stretched brightness for each character in the current charset.
-Rebuilt lazily (only when dirty flag is set and getCharByImageBrightness is called).
-HashMap gives O(1) lookup during the matching loop. Memory is O(n) where n is the
-current charset size.
+Rebuilt (only when dirty flag is set and getCharByImageBrightness is called).
+HashMap gives O(1) lookup during the matching loop. Memory is O(n).
 
 Color[][] (Image, field "pixelArray"):
 A 2D primitive-wrapper array storing the pixel data of the image. Provides O(1)
@@ -123,8 +120,8 @@ of user input. Each case delegates to a dedicated handler method:
 All four exception types are caught by a single multi-catch block in the run() loop:
 catch (InvalidCommandException | InvalidFormatException |
        ExceedingBoundariesException | CharsetTooSmallException e)
-The caught exception's message is printed via System.out.println(e.getMessage()),
-and the loop continues so the user can retry.
+The caught exception's message is printed to Syste.out, and the loop continues so
+the user can retry.
 
 Additionally, IOException is caught separately during image loading at the start of
 run(). If the image file cannot be read, the method returns silently.
@@ -163,25 +160,4 @@ We also changed the internal implementation for performance:
   (not the full rawBrightness map) when finding min/max, ensuring correct
   normalization even when rawBrightness contains entries for removed characters.
 
-5. changes in supplied code and why
-
-The following files were supplied and were NOT modified:
-- image/Image.java
-- image_char_matching/CharConverter.java
-- ascii_output/AsciiOutput.java
-- ascii_output/ConsoleAsciiOutput.java
-- ascii_output/HtmlAsciiOutput.java
-- ascii_art/KeyboardInput.java
-
-The following files were written by us (not supplied):
-- image/PaddedImage.java - Pads images to power-of-two dimensions and splits into tiles.
-- image/SubImageBrightness.java - Computes average brightness of sub-image tiles.
-- image_char_matching/SubImgCharMatcher.java - Character-to-brightness matching engine.
-- ascii_art/AsciiArtAlgorithm.java - The core algorithm mapping brightness to characters.
-- ascii_art/Shell.java - The interactive command shell.
-- ascii_art/CharsetTooSmallException.java - Custom exception for charset size validation.
-- ascii_art/ExceedingBoundariesException.java - Custom exception for resolution bounds.
-- ascii_art/InvalidCommandException.java - Custom exception for unknown commands.
-- ascii_art/InvalidFormatException.java - Custom exception for malformed arguments.
-
-No supplied code was modified.
+5. No supplied code was modified.
